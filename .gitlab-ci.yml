@@ -4,17 +4,19 @@ stages:
 .go_dependency: &go_dependency
   image: golang:1.13.7-buster
   before_script:
-    - go get github.com/sirupsen/logrus
-    - go get gopkg.in/go-playground/validator.v9
-    - go get gopkg.in/yaml.v2
-    - go get github.com/getsentry/sentry-go
-    - go get github.com/Zeles/logrustash
+    - go get github.com/streadway/amqp
 
 build:
   stage: build
   <<: *go_dependency
   script:
-    - env GOOS=darwin GOARCH=amd64 go build -ldflags "-X main.Version=$CI_COMMIT_SHA"
+    - env GOOS=darwin GOARCH=amd64 go build -ldflags "-X main.Version=$CI_COMMIT_SHA" -o norminette_macos
+    - env GOOS=linux GOARCH=amd64 go build -ldflags "-X main.Version=$CI_COMMIT_SHA" -o norminette_linux
+    - env GOOS=windows GOARCH=amd64 go build -ldflags "-X main.Version=$CI_COMMIT_SHA" -o norminette_windows_64
+    - env GOOS=windows GOARCH=386 go build -ldflags "-X main.Version=$CI_COMMIT_SHA" -o norminette_windows_32
   artifacts:
     paths:
-      - norminette
+      - norminette_macos
+      - norminette_linux
+      - norminette_windows_64
+      - norminette_windows_32
