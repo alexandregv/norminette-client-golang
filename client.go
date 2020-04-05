@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"github.com/streadway/amqp"
 	"log"
+	"os"
+	"strings"
 )
 
 type Client struct {
@@ -16,6 +18,8 @@ type Client struct {
 	Hostname    string
 	Login       string
 	Password    string
+	Version     bool
+	Rules       []string
 }
 
 type Response struct {
@@ -24,7 +28,7 @@ type Response struct {
 	Errors   []interface{} `json:"errors"`
 }
 
-func (c *Client) Resp(body []byte) (Response, error) {
+func (client *Client) Resp(body []byte) (Response, error) {
 	var r Response
 	err := json.Unmarshal(body, &r)
 	if err != nil {
@@ -33,20 +37,18 @@ func (c *Client) Resp(body []byte) (Response, error) {
 	return r, nil
 }
 
-func (c *Client) Init() {
-	c.Hostname = "norminette.21-school.ru"
-	c.Login = "guest"
-	c.Password = "guest"
-	MQConnect, err := amqp.Dial(fmt.Sprint("amqp://", c.Login, ":", c.Password, "@", c.Hostname, ":5672", "/"))
+func (client *Client) Init() {
+	MQConnect, err := amqp.Dial(fmt.Sprint("amqp://", client.Login, ":", client.Password, "@", client.Hostname,
+		":5672", "/"))
 	if err != nil {
 		log.Fatal(err)
 	}
-	c.MQConnect = MQConnect
-	ch, err := c.MQConnect.Channel()
+	client.MQConnect = MQConnect
+	ch, err := client.MQConnect.Channel()
 	if err != nil {
 		log.Fatal(err)
 	}
-	c.Channel = ch
+	client.Channel = ch
 	q, err := ch.QueueDeclare(
 		"",
 		false,
@@ -57,37 +59,81 @@ func (c *Client) Init() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	c.reply_queue = q
-	c.Count = 0
-	msgs, err := c.Channel.Consume(
-		c.reply_queue.Name, "", true,
+	client.reply_queue = q
+	client.Count = 0
+	msgs, err := client.Channel.Consume(
+		client.reply_queue.Name, "", true,
 		false, false, false, nil)
-	c.msgs = msgs
+	client.msgs = msgs
 	if err != nil {
 		log.Print(err)
 	}
 }
 
-func (c *Client) publish(contant []byte) {
-	c.Count++
-	c.Channel.Publish(
+func (client *Client) publish(content []byte) {
+	client.Count++
+	client.Channel.Publish(
 		"",
 		"norminette",
 		false,
 		false,
 		amqp.Publishing{
 			ContentType: "application/json",
-			ReplyTo:     c.reply_queue.Name,
-			Body:        contant,
+			ReplyTo:     client.reply_queue.Name,
+			Body:        content,
 		})
 }
 
-func (c *Client) SendFile(filepath string) error {
-	file, err := RequestPreparation(filepath)
+func (client *Client) RequestPreparation(filepath string) ([]byte, error) {
+	content, err := ReadFile(filepath)
+	if err != nil {
+		return nil, err
+	}
+	result, err := json.Marshal(File{Name: filepath, Content: content, Rules: client.Rules})
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+func (client *Client) RequestVersion() ([]byte, error) {
+	result, err := json.Marshal(ActiveVersion{Action: "version"})
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+func (client *Client) SendFile(filepath string) error {
+	file, err := client.RequestPreparation(filepath)
 	if err != nil {
 		return err
 	}
-	c.publish(file)
+	client.publish(file)
+	return nil
+}
+
+func (client *Client) PrintVersion() {
+	for msg := range client.msgs {
+		client.Count--
+		result, err := client.Resp(msg.Body)
+		if err != nil {
+			log.Print(err)
+			continue
+		}
+		fmt.Println("Norminette version:")
+		fmt.Println(result.Display)
+		break
+	}
+}
+
+func (client *Client) SendVersion() error {
+	file, err := client.RequestVersion()
+	if err != nil {
+		return err
+	}
+	client.publish(file)
+	client.PrintVersion()
 	return nil
 }
 
@@ -99,7 +145,14 @@ func (client *Client) PrintResult() {
 			log.Print(err)
 			continue
 		}
-		fmt.Printf("Norme: %s\n", result.Filename)
-		fmt.Print(result.Display, "\n")
+		if strings.HasPrefix(result.Display, "Unvalid options for -R:") == true {
+			fmt.Print(result.Display, "\n")
+			os.Exit(0)
+		} else {
+			fmt.Printf("Norme: %s\n", result.Filename)
+			if result.Display != "" {
+				fmt.Print(result.Display, "\n")
+			}
+		}
 	}
 }
