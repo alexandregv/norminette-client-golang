@@ -18,5 +18,5 @@ build:
     paths:
       - norminette_macos
       - norminette_linux
-      - norminette_windows_64
-      - norminette_windows_32
+      - norminette_windows_64.exe
+      - norminette_windows_32.exe
