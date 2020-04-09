@@ -14,9 +14,15 @@ build:
     - env GOOS=linux GOARCH=amd64 go build -ldflags "-X main.Version=$CI_COMMIT_SHA" -o norminette_linux
     - env GOOS=windows GOARCH=amd64 go build -ldflags "-X main.Version=$CI_COMMIT_SHA" -o norminette_windows_64.exe
     - env GOOS=windows GOARCH=386 go build -ldflags "-X main.Version=$CI_COMMIT_SHA" -o norminette_windows_32.exe
+    - env GOOS=freebsd GOARCH=amd64 go build -ldflags "-X main.Version=$CI_COMMIT_SHA" -o norminette_freebsd_64
+    - env GOOS=freebsd GOARCH=386 go build -ldflags "-X main.Version=$CI_COMMIT_SHA" -o norminette_freebsd_32
+    - env GOOS=freebsd GOARCH=arm go build -ldflags "-X main.Version=$CI_COMMIT_SHA" -o norminette_freebsd_arm
   artifacts:
     paths:
       - norminette_macos
       - norminette_linux
       - norminette_windows_64.exe
       - norminette_windows_32.exe
+      - norminette_freebsd_64
+      - norminette_freebsd_32
+      - norminette_freebsd_arm
