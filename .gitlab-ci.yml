@@ -12,8 +12,8 @@ build:
   script:
     - env GOOS=darwin GOARCH=amd64 go build -ldflags "-X main.Version=$CI_COMMIT_SHA" -o norminette_macos
     - env GOOS=linux GOARCH=amd64 go build -ldflags "-X main.Version=$CI_COMMIT_SHA" -o norminette_linux
-    - env GOOS=windows GOARCH=amd64 go build -ldflags "-X main.Version=$CI_COMMIT_SHA" -o norminette_windows_64
-    - env GOOS=windows GOARCH=386 go build -ldflags "-X main.Version=$CI_COMMIT_SHA" -o norminette_windows_32
+    - env GOOS=windows GOARCH=amd64 go build -ldflags "-X main.Version=$CI_COMMIT_SHA" -o norminette_windows_64.exe
+    - env GOOS=windows GOARCH=386 go build -ldflags "-X main.Version=$CI_COMMIT_SHA" -o norminette_windows_32.exe
   artifacts:
     paths:
       - norminette_macos
