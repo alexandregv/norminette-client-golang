@@ -3,24 +3,22 @@ stages:
   - release
 
 .go_dependency: &go_dependency
+  stage: build
   image: golang:1.13.7-buster
   before_script:
     - apt update
     - apt install -y upx-ucl
     - go get github.com/streadway/amqp
-
-build:
-  stage: build
-  <<: *go_dependency
   script:
-    - env GOOS=darwin GOARCH=amd64 go build -ldflags -S -ldflags "-s -w -X main.host=$MSK_HOST -X main.l=$MSK_LOGIN -X main.p=$MSP_PASS" -o norminette_macos
-    - env GOOS=linux GOARCH=amd64 go build -ldflags "-s -w -X main.host=$MSK_HOST -X main.l=$MSK_LOGIN -X main.p=$MSP_PASS" -o norminette_linux
-    - env GOOS=windows GOARCH=amd64 go build -ldflags "-s -w -X main.host=$MSK_HOST -X main.l=$MSK_LOGIN -X main.p=$MSP_PASS" -o norminette_windows_64.exe
-    - env GOOS=windows GOARCH=386 go build -ldflags "-s -w -X main.host=$MSK_HOST -X main.l=$MSK_LOGIN -X main.p=$MSP_PASS" -o norminette_windows_32.exe
-    - upx --best norminette_macos
-    - upx --best norminette_linux
-    - upx --best norminette_windows_64.exe
-    - upx --best norminette_windows_32.exe
+    - env GOOS=darwin GOARCH=amd64 go build -ldflags -S -ldflags "-s -w -X main.host=$HOST -X main.l=$LOGIN -X main.p=$PASS" -o norminette_$CAMPUS_macos
+    - env GOOS=linux GOARCH=amd64 go build -ldflags "-s -w -X main.host=$HOST -X main.l=$LOGIN -X main.p=$PASS" -o norminette_$CAMPUS_linux
+    - env GOOS=windows GOARCH=amd64 go build -ldflags "-s -w -X main.host=$HOST -X main.l=$LOGIN -X main.p=$PASS" -o norminette_$CAMPUS_windows_64.exe
+    - env GOOS=windows GOARCH=386 go build -ldflags "-s -w -X main.host=$HOST -X main.l=$LOGIN -X main.p=$PASS" -o norminette_$CAMPUS_windows_32.exe
+  after_script:
+    - upx --best norminette_$CAMPUS_macos
+    - upx --best norminette_$CAMPUS_linux
+    - upx --best norminette_$CAMPUS_windows_64.exe
+    - upx --best norminette_$CAMPUS_windows_32.exe
   cache:
     paths:
       - .
@@ -31,11 +29,24 @@ build:
       - norminette_windows_64.exe
       - norminette_windows_32.exe
 
-release:
+build_msk:
+  variables:
+    CAMPUS: msk
+    HOST: MSK_HOST
+    LOGIN: MSK_LOGIN
+    PASS: MSP_PASS
+  <<: *go_dependency
+
+build_kzn:
+  variables:
+    CAMPUS: kzn
+    HOST: KZN_HOST
+    LOGIN: KZN_LOGIN
+    PASS: KZN_PASS
+  <<: *go_dependency
+
+.release_dependency: &release_dependency
   stage: release
-  when: manual
-  only:
-    - master
   image: alpine:latest
   before_script:
     - 'which ssh-agent || ( apk add --update --no-cache openssh-client curl rsync )'
@@ -45,4 +56,23 @@ release:
     - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
     - echo "$SSH" | tr -d '\r' | ssh-add -
   script:
-    - scp ./norminette_macos master@releases.msk.21-school.ru:./release
+    - scp ./norminette_$CAMPUS_macos master@releases.msk.21-school.ru:./release
+    - scp ./norminette_$CAMPUS_linux master@releases.msk.21-school.ru:./release
+    - scp ./norminette_$CAMPUS_windows_64.exe master@releases.msk.21-school.ru:./release
+    - scp ./norminette_$CAMPUS_windows_32.exe master@releases.msk.21-school.ru:./release
+
+release_msk:
+  when: manual
+  only:
+    - master
+  variables:
+    CAMPUS: msk
+  <<: *release_dependency
+
+release_kzn:
+  when: manual
+  only:
+    - master
+  variables:
+    CAMPUS: kzn
+  <<: *release_dependency
