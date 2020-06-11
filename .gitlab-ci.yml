@@ -10,24 +10,24 @@ stages:
     - apt install -y upx-ucl
     - go get github.com/streadway/amqp
   script:
-    - env GOOS=darwin GOARCH=amd64 go build -ldflags -S -ldflags "-s -w -X main.host=$HOST -X main.l=$LOGIN -X main.p=$PASS" -o norminette_$CAMPUS_macos
-    - env GOOS=linux GOARCH=amd64 go build -ldflags "-s -w -X main.host=$HOST -X main.l=$LOGIN -X main.p=$PASS" -o norminette_$CAMPUS_linux
-    - env GOOS=windows GOARCH=amd64 go build -ldflags "-s -w -X main.host=$HOST -X main.l=$LOGIN -X main.p=$PASS" -o norminette_$CAMPUS_windows_64.exe
-    - env GOOS=windows GOARCH=386 go build -ldflags "-s -w -X main.host=$HOST -X main.l=$LOGIN -X main.p=$PASS" -o norminette_$CAMPUS_windows_32.exe
+    - env GOOS=darwin GOARCH=amd64 go build -ldflags -S -ldflags "-s -w -X main.host=$HOST -X main.l=$LOGIN -X main.p=$PASS" -o norminette_${CAMPUS}_macos
+    - env GOOS=linux GOARCH=amd64 go build -ldflags "-s -w -X main.host=$HOST -X main.l=$LOGIN -X main.p=$PASS" -o norminette_${CAMPUS}_linux
+    - env GOOS=windows GOARCH=amd64 go build -ldflags "-s -w -X main.host=$HOST -X main.l=$LOGIN -X main.p=$PASS" -o norminette_${CAMPUS}_windows_64.exe
+    - env GOOS=windows GOARCH=386 go build -ldflags "-s -w -X main.host=$HOST -X main.l=$LOGIN -X main.p=$PASS" -o norminette_${CAMPUS}_windows_32.exe
   after_script:
-    - upx --best norminette_$CAMPUS_macos
-    - upx --best norminette_$CAMPUS_linux
-    - upx --best norminette_$CAMPUS_windows_64.exe
-    - upx --best norminette_$CAMPUS_windows_32.exe
+    - upx --best norminette_${CAMPUS}_macos
+    - upx --best norminette_${CAMPUS}_linux
+    - upx --best norminette_${CAMPUS}_windows_64.exe
+    - upx --best norminette_${CAMPUS}_windows_32.exe
   cache:
     paths:
       - .
   artifacts:
     paths:
-      - norminette_macos
-      - norminette_linux
-      - norminette_windows_64.exe
-      - norminette_windows_32.exe
+      - norminette_${CAMPUS}_macos
+      - norminette_${CAMPUS}_linux
+      - norminette_${CAMPUS}_windows_64.exe
+      - norminette_${CAMPUS}_windows_32.exe
 
 build_msk:
   variables:
@@ -56,10 +56,10 @@ build_kzn:
     - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
     - echo "$SSH" | tr -d '\r' | ssh-add -
   script:
-    - scp ./norminette_$CAMPUS_macos master@releases.msk.21-school.ru:./release
-    - scp ./norminette_$CAMPUS_linux master@releases.msk.21-school.ru:./release
-    - scp ./norminette_$CAMPUS_windows_64.exe master@releases.msk.21-school.ru:./release
-    - scp ./norminette_$CAMPUS_windows_32.exe master@releases.msk.21-school.ru:./release
+    - scp ./norminette_${CAMPUS}_macos master@releases.msk.21-school.ru:./release
+    - scp ./norminette_${CAMPUS}_linux master@releases.msk.21-school.ru:./release
+    - scp ./norminette_${CAMPUS}_windows_64.exe master@releases.msk.21-school.ru:./release
+    - scp ./norminette_${CAMPUS}_windows_32.exe master@releases.msk.21-school.ru:./release
 
 release_msk:
   when: manual
