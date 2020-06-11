@@ -1,28 +1,48 @@
 stages:
   - build
+  - release
 
 .go_dependency: &go_dependency
   image: golang:1.13.7-buster
   before_script:
+    - apt update
+    - apt install -y upx-ucl
     - go get github.com/streadway/amqp
 
 build:
   stage: build
   <<: *go_dependency
   script:
-    - env GOOS=darwin GOARCH=amd64 go build -ldflags "-X main.Version=$CI_COMMIT_SHA" -o norminette_macos
-    - env GOOS=linux GOARCH=amd64 go build -ldflags "-X main.Version=$CI_COMMIT_SHA" -o norminette_linux
-    - env GOOS=windows GOARCH=amd64 go build -ldflags "-X main.Version=$CI_COMMIT_SHA" -o norminette_windows_64.exe
-    - env GOOS=windows GOARCH=386 go build -ldflags "-X main.Version=$CI_COMMIT_SHA" -o norminette_windows_32.exe
-    - env GOOS=freebsd GOARCH=amd64 go build -ldflags "-X main.Version=$CI_COMMIT_SHA" -o norminette_freebsd_64
-    - env GOOS=freebsd GOARCH=386 go build -ldflags "-X main.Version=$CI_COMMIT_SHA" -o norminette_freebsd_32
-    - env GOOS=freebsd GOARCH=arm go build -ldflags "-X main.Version=$CI_COMMIT_SHA" -o norminette_freebsd_arm
+    - env GOOS=darwin GOARCH=amd64 go build -ldflags -S -ldflags "-s -w -X main.host=$MSK_HOST -X main.l=$MSK_LOGIN -X main.p=$MSP_PASS" -o norminette_macos
+    - env GOOS=linux GOARCH=amd64 go build -ldflags "-s -w -X main.host=$MSK_HOST -X main.l=$MSK_LOGIN -X main.p=$MSP_PASS" -o norminette_linux
+    - env GOOS=windows GOARCH=amd64 go build -ldflags "-s -w -X main.host=$MSK_HOST -X main.l=$MSK_LOGIN -X main.p=$MSP_PASS" -o norminette_windows_64.exe
+    - env GOOS=windows GOARCH=386 go build -ldflags "-s -w -X main.host=$MSK_HOST -X main.l=$MSK_LOGIN -X main.p=$MSP_PASS" -o norminette_windows_32.exe
+    - upx --best norminette_macos
+    - upx --best norminette_linux
+    - upx --best norminette_windows_64.exe
+    - upx --best norminette_windows_32.exe
+  cache:
+    paths:
+      - .
   artifacts:
     paths:
       - norminette_macos
       - norminette_linux
       - norminette_windows_64.exe
       - norminette_windows_32.exe
-      - norminette_freebsd_64
-      - norminette_freebsd_32
-      - norminette_freebsd_arm
+
+release:
+  stage: release
+  when: manual
+  only:
+    - master
+  image: alpine:latest
+  before_script:
+    - 'which ssh-agent || ( apk add --update --no-cache openssh-client curl rsync )'
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - eval $(ssh-agent -s)
+    - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
+    - echo "$SSH" | tr -d '\r' | ssh-add -
+  script:
+    - scp ./norminette_macos master@releases.msk.21-school.ru:./release
