@@ -8,6 +8,10 @@ import (
 	"path/filepath"
 )
 
+var host string
+var l string
+var p string
+
 type Norminette struct {
 	Client *Client
 	Files  []string
@@ -15,9 +19,9 @@ type Norminette struct {
 
 func (norm *Norminette) Init() {
 	client := &Client{
-		Hostname: "norminette.21-school.ru",
-		Login:    "guest",
-		Password: "guest",
+		Hostname: host,
+		Login:    l,
+		Password: p,
 		Version:  false}
 	client.Init()
 	norm.Client = client
