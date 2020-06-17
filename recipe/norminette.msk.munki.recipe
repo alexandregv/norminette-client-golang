@@ -9,7 +9,7 @@
     <key>Input</key>
     <dict>
         <key>NAME</key>
-        <string>norminette</string>
+        <string>norminette_msk_macos</string>
         <key>MUNKI_REPO_SUBDIR</key>
         <string>apps/norminette</string>
         <key>pkginfo</key>

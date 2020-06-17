@@ -9,9 +9,9 @@
     <key>Input</key>
     <dict>
         <key>NAME</key>
-        <string>norminette</string>
+        <string>norminette_msk_macos</string>
         <key>DOWNLOAD_URL</key>
-        <string>https://Release.msk.21-school.ru/norminette</string>
+        <string>https://Release.msk.21-school.ru/norminette_msk_macos</string>
     </dict>
     <key>MinimumVersion</key>
     <string>0.2.0</string>
@@ -25,7 +25,7 @@
                 <key>url</key>
                 <string>%DOWNLOAD_URL%</string>
                 <key>filename</key>
-                <string>%NAME%.pkg</string>
+                <string>%NAME%</string>
             </dict>
         </dict>
         <dict>
