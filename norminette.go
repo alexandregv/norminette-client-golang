@@ -11,6 +11,7 @@ import (
 var host string
 var l string
 var p string
+var port string
 
 type Norminette struct {
 	Client *Client
@@ -22,6 +23,7 @@ func (norm *Norminette) Init() {
 		Hostname: host,
 		Login:    l,
 		Password: p,
+		Port: port,
 		Version:  false}
 	client.Init()
 	norm.Client = client
