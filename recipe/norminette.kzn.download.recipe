@@ -11,7 +11,7 @@
         <key>NAME</key>
         <string>norminette_kzn_macos</string>
         <key>DOWNLOAD_URL</key>
-        <string>https://Release.msk.21-school.ru/norminette_kzn_macos</string>
+        <string>http://release.msk.21-school.ru/norminette_kzn_macos</string>
     </dict>
     <key>MinimumVersion</key>
     <string>0.2.0</string>

@@ -18,6 +18,7 @@ type Client struct {
 	Hostname    string
 	Login       string
 	Password    string
+	Port		string
 	Version     bool
 	Rules       []string
 }
@@ -39,7 +40,7 @@ func (client *Client) Resp(body []byte) (Response, error) {
 
 func (client *Client) Init() {
 	MQConnect, err := amqp.Dial(fmt.Sprint("amqp://", client.Login, ":", client.Password, "@", client.Hostname,
-		":5672", "/"))
+		client.Port, "/"))
 	if err != nil {
 		log.Fatal(err)
 	}
