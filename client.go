@@ -3,10 +3,11 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/streadway/amqp"
 	"log"
 	"os"
 	"strings"
+
+	"github.com/streadway/amqp"
 )
 
 type Client struct {
@@ -18,7 +19,7 @@ type Client struct {
 	Hostname    string
 	Login       string
 	Password    string
-	Port		string
+	Port        string
 	Version     bool
 	Rules       []string
 }
