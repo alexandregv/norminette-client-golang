@@ -39,8 +39,7 @@ func (client *Client) Resp(body []byte) (Response, error) {
 }
 
 func (client *Client) Init() {
-	MQConnect, err := amqp.Dial(fmt.Sprint("amqp://", client.Login, ":", client.Password, "@", client.Hostname,
-		client.Port, "/"))
+	MQConnect, err := amqp.Dial(fmt.Sprint("amqp://", client.Login, ":", client.Password, "@", client.Hostname, ":", client.Port, "/"))
 	if err != nil {
 		log.Fatal(err)
 	}
