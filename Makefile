@@ -1,6 +1,7 @@
 NAME=norminette
 
-HOST=norminette.jgengo.fr
+#HOST=norminette.jgengo.fr
+HOST=norminette.42network.org
 LOGIN=guest
 PASS=guest
 PORT=5672
