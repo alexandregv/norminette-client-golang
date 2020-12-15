@@ -1,4 +1,4 @@
 .idea/
 testfile/
 norminette
-norminette_*
+build/

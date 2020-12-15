@@ -1,23 +1,22 @@
-NAME=norminette
+NAME = norminette-go
 
-#HOST=norminette.jgengo.fr
-HOST=norminette.42network.org
-LOGIN=guest
-PASS=guest
-PORT=5672
+HOST  ?= norminette.42network.org
+LOGIN ?= guest
+PASS  ?= guest
+PORT  ?= 5672
 
-LDFLAGS="-s -w -X main.host=${HOST} -X main.port=${PORT} -X main.l=${LOGIN} -X main.p=${PASS}"
+LDFLAGS = "-s -w -X main.host=${HOST} -X main.port=${PORT} -X main.l=${LOGIN} -X main.p=${PASS}"
 
-all: linux macos windows
+all: macos linux windows
 
 macos:
-	env GOOS=darwin  GOARCH=amd64 go build -ldflags ${LDFLAGS} -o ${NAME}_macos
+	env GOOS=darwin  GOARCH=amd64 go build -ldflags ${LDFLAGS} -o build/macos/${NAME}
 
 linux:
-	env GOOS=linux   GOARCH=amd64 go build -ldflags ${LDFLAGS} -o ${NAME}_linux
+	env GOOS=linux   GOARCH=amd64 go build -ldflags ${LDFLAGS} -o build/linux/${NAME}
 
 windows:
-	env GOOS=windows GOARCH=386   go build -ldflags ${LDFLAGS} -o ${NAME}_windows.exe
+	env GOOS=windows GOARCH=386   go build -ldflags ${LDFLAGS} -o build/windows/${NAME}.exe
 
 clean:
-	rm -f ${NAME}_{macos,linux,windows.exe}
+	rm -rf build/
