@@ -8,10 +8,10 @@ import (
 	"path/filepath"
 )
 
-var host string
-var l string
-var p string
-var port string
+var host = "norminette.42.fr"
+var l = "guest"
+var p = "guest"
+var port = "/"
 
 type Norminette struct {
 	Client *Client
